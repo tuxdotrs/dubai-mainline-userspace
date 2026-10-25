@@ -46,10 +46,15 @@ in
     VirtualKeyboardEnabled=true
   '';
   programs.feedbackd.enable = true; # haptics
+  # Show the boot: kernel and systemd messages scroll on the display (tty1)
+  # instead of a splash. U-Boot's menu picks generations, so stage-1's GUI
+  # (splash + generation picker) isn't needed either.
   mobile.beautification = {
-    silentBoot = lib.mkDefault true;
-    splash = lib.mkDefault true;
+    silentBoot = false;
+    splash = false;
   };
+  mobile.boot.stage-1.gui.enable = false;
+  boot.consoleLogLevel = 7;
 
   users.users.${userName} = {
     isNormalUser = true;
