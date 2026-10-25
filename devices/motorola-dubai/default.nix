@@ -26,6 +26,7 @@ in
   imports = [
     ./qcom.nix
     ./sound.nix
+    ./u-boot.nix
   ];
 
   options.motorola-dubai = {
