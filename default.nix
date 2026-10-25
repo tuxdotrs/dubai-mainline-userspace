@@ -1,4 +1,4 @@
-# nix-build -A outputs.default                 (images, see README.md)
+# nix-build -A outputs.default                 (images; see dubai-mainline's build.sh)
 # nixos-rebuild switch --file default.nix ...   (updates)
 # Builds natively for aarch64 (binfmt on x86_64); the kernel is cross-compiled.
 { device ? ./devices/motorola-dubai, system ? "aarch64-linux", ... }@args:

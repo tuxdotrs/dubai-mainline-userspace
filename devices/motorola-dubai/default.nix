@@ -1,5 +1,5 @@
 # Motorola Edge 30 (dubai), SM7325, mainline kernel.
-# Ported from pmOS device-motorola-dubai (see ../../reference/pmaports).
+# Ported from pmOS device-motorola-dubai.
 { config, lib, pkgs, ... }:
 
 let
@@ -17,8 +17,8 @@ let
     };
   kernel =
     if cfg.kernel == "source"
-    then kernelPkgs.callPackage ../../kernel { }
-    else pkgs.callPackage ./kernel-prebuilt { };
+    then kernelPkgs.callPackage cfg.kernelDir { }
+    else pkgs.callPackage (cfg.kernelDir + "/prebuilt") { };
 
   dtb = "dtbs/qcom/sm7325-motorola-dubai-${cfg.panel}.dtb";
 in
@@ -33,9 +33,15 @@ in
       type = lib.types.enum [ "source" "prebuilt" ];
       default = "source";
       description = ''
-        "source" builds ../../kernel (sc7280-mainline submodule);
-        "prebuilt" uses pmOS's binary package from ./kernel-prebuilt.
+        "source" builds the kernel in kernelDir (sc7280-mainline);
+        "prebuilt" uses pmOS's binary package from kernelDir/prebuilt.
       '';
+    };
+    kernelDir = lib.mkOption {
+      type = lib.types.path;
+      # kernel/ next to userspace/ in the dubai-mainline meta repo
+      default = ../../../kernel;
+      description = "Checkout of dubai-mainline-kernel.";
     };
     kernelBuildSystem = lib.mkOption {
       type = with lib.types; nullOr str;
