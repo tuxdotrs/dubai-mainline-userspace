@@ -117,6 +117,20 @@ in
     # pmOS uses qbootctl, which only flips the attribute bits.
     mobile.boot.boot-control.enable = false;
 
+    # Mark the booted slot successful (qbootctl -m) once the system is up, so
+    # ABL stops counting down its retries and switching slots. qbootctl only
+    # ORs the successful bit into the slot's A/B entries and fixes the CRCs
+    # (verified on this phone: one byte per *_b entry on LUN 5, nothing else).
+    systemd.services.mark-boot-successful = {
+      description = "Mark the A/B boot slot successful";
+      wantedBy = [ "multi-user.target" ];
+      after = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = "${pkgs.qbootctl}/bin/qbootctl -m";
+      };
+    };
+
     mobile.system.type = "android";
     mobile.system.android = {
       device_name = "dubai";
