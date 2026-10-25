@@ -1,0 +1,4 @@
+[submodule "mobile-nixos"]
+	path = mobile-nixos
+	url = https://github.com/tuxdotrs/mobile-nixos
+	branch = motorola-dubai
