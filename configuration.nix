@@ -4,8 +4,6 @@
 let
   userName = "user";
   denial = import ./denial/source.nix;
-  # From `./build.sh denial` in the meta repo (ARM64 cross-build)
-  denialPayload = ../build/denial + "/denial-linux-arm64-${denial.rev}.tar.gz";
 in
 {
   # The Denial compositor, with its own NixOS module (session, portals,
@@ -13,10 +11,9 @@ in
   imports = [ "${denial.src}/nix/module.nix" ];
   programs.denial = {
     enable = true;
-    package =
-      assert lib.assertMsg (builtins.pathExists denialPayload)
-        "${toString denialPayload} missing: run `./build.sh denial` in the meta repo";
-      pkgs.callPackage ./denial { payload = denialPayload; };
+    # ARM64 build published as a release (denial/source.nix); to test a local
+    # `./build.sh denial` instead: payload = ../build/denial/<file>.tar.gz
+    package = pkgs.callPackage ./denial { payload = pkgs.fetchurl denial.payload; };
     ddc.enable = false;
   };
   # Read by denial-session. card0 (simpledrm) is gone after the msm handoff.

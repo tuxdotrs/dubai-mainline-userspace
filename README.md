@@ -15,6 +15,7 @@ with the [Denial](https://github.com/denialwm/denial) Wayland compositor.
 
 The kernel comes from [dubai-mainline-kernel](https://github.com/tuxdotrs/dubai-mainline-kernel),
 found through `motorola-dubai.kernelDir` (default: `../kernel`, its place in
-the meta repo). Build from the meta repo: `./build.sh denial` (once per
-Denial revision), then `./build.sh system boot`.
+the meta repo). Build from the meta repo: `./build.sh system boot`. The Denial
+ARM64 binaries come from this repo's releases (`denial-<rev>`), built by the
+meta repo's `./build.sh denial`.
 Docs: dubai-mainline `docs/`.
