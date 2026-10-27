@@ -1,7 +1,8 @@
 # The Denial revision this port uses: its source (packaging files, NixOS
-# module) and the ARM64 binaries built from it by `./build.sh denial` in the
-# meta repo, published as a release of this repo (tag denial-<rev:8>). For a
-# new revision: build, `gh release create denial-<rev:8> …`, update both.
+# module) and the ARM64 binaries built from it by cross-build/ (`./build.sh
+# denial` in the meta repo), published as a release of this repo (tag
+# denial-<rev:8>). For a new revision: build, `gh release create
+# denial-<rev:8> …`, update both.
 rec {
   rev = "c96375a190a200b6343868afc42d4492b6badb9d";
   src = builtins.fetchTarball {

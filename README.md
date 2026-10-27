@@ -6,8 +6,10 @@ with the [Denial](https://github.com/denialwm/denial) Wayland compositor.
 
     default.nix                Mobile NixOS + this device + configuration.nix
     configuration.nix          the system on the phone (Denial via greetd, Waydroid, user, ssh, ...)
-    denial/                    Denial for aarch64: its ARM64 cross-build (meta repo
-                               `./build.sh denial`) + upstream packaging files
+    denial/                    Denial for aarch64: package (ARM64 payload + upstream
+                               packaging files), source pin
+      cross-build/               docker ARM64 cross-build of the payload (run by
+                               the meta repo's `./build.sh denial`)
     devices/motorola-dubai/    device module: boot image, stage-1, USB, firmware,
                                Qualcomm services, sound
     mobile-nixos/              submodule: upstream Mobile NixOS (branch development)

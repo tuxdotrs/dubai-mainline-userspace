@@ -1,6 +1,6 @@
 # Denial (https://github.com/denialwm/denial) for aarch64. Its own Nix package
 # is x86_64-only (pinned x86-64 Flutter engine), so the binaries come from its
-# ARM64 cross-build (`./build.sh denial` in the meta repo, Debian container)
+# ARM64 cross-build (cross-build/, run by `./build.sh denial` in the meta repo)
 # and the rest from the same revision's source, laid out like its
 # nix/package.nix. Not included: the plugin manager.
 { lib
