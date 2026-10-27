@@ -1,0 +1,27 @@
+--- a/modules/system-types/android/bootimg.nix
++++ b/modules/system-types/android/bootimg.nix
+@@ -45,6 +45,7 @@ pkgs.runCommand name {
+     --ramdisk_offset ${bootimg.flash.offset_ramdisk} \
+     --tags_offset    ${bootimg.flash.offset_tags   } \
+     --pagesize       ${bootimg.flash.pagesize      } \
++    ${lib.escapeShellArgs bootimg.extraArgs} \
+     -o $out
+   )
+ ''
+--- a/modules/system-types/android/default.nix
++++ b/modules/system-types/android/default.nix
+@@ -154,6 +154,14 @@ in
+           internal = true;
+         };
+ 
++        extraArgs = lib.mkOption {
++          type = types.listOf types.str;
++          default = [];
++          example = [ "--header_version" "2" "--dtb" "/path/to/board.dtb" ];
++          description = "Additional arguments for mkbootimg, e.g. for boot image header v1/v2.";
++          internal = true;
++        };
++
+         flash = lib.attrsets.genAttrs [
+           "offset_base"
+           "offset_kernel"

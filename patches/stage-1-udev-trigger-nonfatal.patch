@@ -1,0 +1,18 @@
+--- a/boot/init/tasks/udev.rb
++++ b/boot/init/tasks/udev.rb
+@@ -22,7 +22,14 @@ class Tasks::UDev < SingletonTask
+ 
+   def run()
+     udevd
+-    udevadm("trigger", "--action=add")
++    # Like systemd-udev-trigger.service (`ExecStart=-udevadm trigger ...`), a
++    # device refusing the event must not fail the boot; e.g. qcom-battmgr
++    # power supplies answer EAGAIN until the ADSP firmware runs.
++    begin
++      udevadm("trigger", "--action=add")
++    rescue System::CommandError => e
++      $logger.warn(e.message)
++    end
+     udevadm("settle")
+   end
+ 
