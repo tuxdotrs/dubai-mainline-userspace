@@ -118,9 +118,24 @@ in
     KERNEL=="fastrpc-*", MODE="0660", GROUP="fastrpc"
     # pmOS 81-libssc-motorola-dubai.rules: accelerometer mount matrix
     SUBSYSTEM=="misc", KERNEL=="fastrpc-*", ENV{ACCEL_MOUNT_MATRIX}+="-1, 0, 0; 0, -1, 0; 0, 0, -1"
+    # iio-sensor-proxy's own rule only enables ssc-light and ssc-compass on the
+    # ADSP; accelerometer (auto-rotate) and proximity are opt-in per device
+    SUBSYSTEM=="misc", KERNEL=="fastrpc-adsp*", ENV{IIO_SENSOR_PROXY_TYPE}+="ssc-accel ssc-proximity"
   '';
 
   hardware.sensor.iio.enable = lib.mkDefault true;
+  # The sensors are on the ADSP's SSC, which rebuilds its registry at boot (no
+  # persist registry) and doesn't answer for a while; iio-sensor-proxy then
+  # finds no sensors and exits cleanly. Start it after the sensors PD and retry.
+  systemd.services.iio-sensor-proxy = {
+    after = [ "hexagonrpcd-adsp-sensorspd.service" ];
+    serviceConfig = {
+      Restart = "on-success";
+      RestartSec = 10;
+    };
+    startLimitIntervalSec = 300;
+    startLimitBurst = 10;
+  };
   networking.modemmanager.enable = lib.mkDefault true;
 
   # pmOS soc-qcom: UPower.conf and gstreamer.conf

@@ -3,49 +3,46 @@
 
 let
   userName = "user";
+  denial = import ./denial/source.nix;
+  # From `./build.sh denial` in the meta repo (ARM64 cross-build)
+  denialPayload = ../build/denial + "/denial-linux-arm64-${denial.rev}.tar.gz";
 in
 {
-  # Plasma Mobile. nixpkgs packages it but has no option for it, so this is
-  # Plasma 6 plus the plasma-mobile session and the mobile apps.
-  services.desktopManager.plasma6.enable = true;
-  services.displayManager = {
-    sddm = {
-      enable = true;
-      wayland.enable = true;
-    };
-    sessionPackages = [ pkgs.kdePackages.plasma-mobile ];
-    defaultSession = "plasma-mobile";
-    # SDDM's greeter isn't usable by touch; Plasma Mobile has its own lock
-    # screen, where the password is the PIN.
-    autoLogin = {
-      enable = true;
-      user = userName;
+  # The Denial compositor, with its own NixOS module (session, portals,
+  # Xwayland, polkit) and our ARM64 package.
+  imports = [ "${denial.src}/nix/module.nix" ];
+  programs.denial = {
+    enable = true;
+    package =
+      assert lib.assertMsg (builtins.pathExists denialPayload)
+        "${toString denialPayload} missing: run `./build.sh denial` in the meta repo";
+      pkgs.callPackage ./denial { payload = denialPayload; };
+    ddc.enable = false;
+  };
+  # Read by denial-session. card0 (simpledrm) is gone after the msm handoff.
+  environment.etc."denial/session.conf".text = ''
+    DENIAL_DRM_DEVICE=/dev/dri/by-path/platform-ae01000.display-controller-card
+    DENIAL_RENDER_DEVICE=/dev/dri/by-path/platform-ae01000.display-controller-render
+    DENIAL_SHELL_PROFILE=mobile
+  '';
+  # Autologin into Denial on VT1; tuigreet if the session exits.
+  services.greetd = {
+    enable = true;
+    settings = {
+      initial_session = {
+        user = userName;
+        command = "${config.programs.denial.package}/bin/denial-session";
+      };
+      default_session.command =
+        "${pkgs.tuigreet}/bin/tuigreet --time --cmd ${config.programs.denial.package}/bin/denial-session";
     };
   };
-  environment.systemPackages = (with pkgs.kdePackages; [
-    plasma-mobile
-    plasma-dialer
-    spacebar # SMS
-    plasma-settings
-    plasma-phonebook
-    plasma-camera
-    qmlkonsole
-    angelfish
-    kclock
-    kweather
-    kalk
-  ]) ++ (with pkgs; [
-    maliit-framework
-    maliit-keyboard # on-screen keyboard
-    hunspellDicts.en_US
-  ]);
-  # Nothing sets KWin's input method, so the Maliit keyboard never starts.
-  environment.etc."xdg/kwinrc".text = ''
-    [Wayland]
-    InputMethod=/run/current-system/sw/share/applications/com.github.maliit.keyboard.desktop
-    VirtualKeyboardEnabled=true
-  '';
+  environment.systemPackages = with pkgs; [
+    kitty
+  ];
   programs.feedbackd.enable = true; # haptics
+  # Android apps in an LXC container (`waydroid init` once, as root)
+  virtualisation.waydroid.enable = true;
   # Show the boot: kernel and systemd messages scroll on the display (tty1)
   # instead of a splash. U-Boot's menu picks generations, so stage-1's GUI
   # (splash + generation picker) isn't needed either.
@@ -74,9 +71,6 @@ in
   hardware.bluetooth.enable = true;
   services.openssh.enable = true;
 
-  # With ibus (GTK_IM_MODULE=ibus) text input bypasses the Wayland input
-  # method and the on-screen keyboard never shows.
-  i18n.inputMethod.enable = lib.mkForce false;
   zramSwap.enable = true;
 
   nix.settings = {
